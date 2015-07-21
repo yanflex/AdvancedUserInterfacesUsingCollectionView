@@ -223,62 +223,77 @@
 
 @implementation AAPLCollectionViewCell
 
+- (void)initializeCell
+{
+    // We default to showing the reorder control unless we're told not to.
+    _showsReorderControl = YES;
+    
+    // We don't get background or selectedBackground views unless we create them!
+    self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+    
+    UIView *contentView = [super contentView];
+    
+    _privateContentView = [[UIView alloc] initWithFrame:contentView.bounds];
+    _privateContentView.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView addSubview:_privateContentView];
+    
+    _editActionsView = [[AAPLActionsView alloc] initWithFrame:CGRectZero cell:self];
+    _editActionsView.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_privateContentView attribute:NSLayoutAttributeTop
+                                                     relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:_privateContentView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeHeight multiplier:1 constant:0]];
+    
+    _contentWidthConstraint = [NSLayoutConstraint constraintWithItem:_privateContentView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeWidth multiplier:1 constant:0];
+    [self addConstraint:_contentWidthConstraint];
+    
+    _contentLeftConstraint = [NSLayoutConstraint constraintWithItem:_privateContentView attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeLeft multiplier:1 constant:0];
+    
+    [self addConstraint:_contentLeftConstraint];
+    
+    _topHairline = [AAPLHairlineView hairlineViewForAlignment:AAPLHairlineAlignmentHorizontal];
+    _topHairline.translatesAutoresizingMaskIntoConstraints = NO;
+    _topHairline.alpha = 0;
+    
+    _bottomHairline = [AAPLHairlineView hairlineViewForAlignment:AAPLHairlineAlignmentHorizontal];
+    _bottomHairline.translatesAutoresizingMaskIntoConstraints = NO;
+    _bottomHairline.alpha = 0;
+    
+    _removeImageView = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"AAPLRemoveControl"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+    _removeImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _removeImageView.tintColor = DESTRUCTIVE_COLOR;
+    
+    [_removeImageView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+    
+    _reorderImageView = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"AAPLDragGrabber"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+    _reorderImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _reorderImageView.tintColor = [UIColor lightGrayColor];
+    [_reorderImageView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+    
+    contentView.clipsToBounds = YES;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (!self)
         return nil;
+    
+    [self initializeCell];
 
-    // We default to showing the reorder control unless we're told not to.
-    _showsReorderControl = YES;
-
-    // We don't get background or selectedBackground views unless we create them!
-    self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
-    self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
-
-    UIView *contentView = [super contentView];
-
-    _privateContentView = [[UIView alloc] initWithFrame:contentView.bounds];
-    _privateContentView.translatesAutoresizingMaskIntoConstraints = NO;
-    [contentView addSubview:_privateContentView];
-
-    _editActionsView = [[AAPLActionsView alloc] initWithFrame:CGRectZero cell:self];
-    _editActionsView.translatesAutoresizingMaskIntoConstraints = NO;
-
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:_privateContentView attribute:NSLayoutAttributeTop
-                                                     relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
-
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:_privateContentView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeHeight multiplier:1 constant:0]];
-
-    _contentWidthConstraint = [NSLayoutConstraint constraintWithItem:_privateContentView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeWidth multiplier:1 constant:0];
-    [self addConstraint:_contentWidthConstraint];
-
-    _contentLeftConstraint = [NSLayoutConstraint constraintWithItem:_privateContentView attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:contentView attribute:NSLayoutAttributeLeft multiplier:1 constant:0];
-
-    [self addConstraint:_contentLeftConstraint];
-
-    _topHairline = [AAPLHairlineView hairlineViewForAlignment:AAPLHairlineAlignmentHorizontal];
-    _topHairline.translatesAutoresizingMaskIntoConstraints = NO;
-    _topHairline.alpha = 0;
-
-    _bottomHairline = [AAPLHairlineView hairlineViewForAlignment:AAPLHairlineAlignmentHorizontal];
-    _bottomHairline.translatesAutoresizingMaskIntoConstraints = NO;
-    _bottomHairline.alpha = 0;
-
-    _removeImageView = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"AAPLRemoveControl"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
-    _removeImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    _removeImageView.tintColor = DESTRUCTIVE_COLOR;
-
-    [_removeImageView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
-
-    _reorderImageView = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"AAPLDragGrabber"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
-    _reorderImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    _reorderImageView.tintColor = [UIColor lightGrayColor];
-    [_reorderImageView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
-
-    contentView.clipsToBounds = YES;
     return self;
 }
+
+-(id) initWithCoder:(NSCoder *)aDecoder {
+    if ( !(self = [super initWithCoder:aDecoder]) ) return nil;
+
+    [self initializeCell];
+
+    return self;
+}
+
 
 //- (UICollectionViewLayoutAttributes *)preferredLayoutAttributesFittingAttributes:(UICollectionViewLayoutAttributes *)layoutAttributes
 //{
